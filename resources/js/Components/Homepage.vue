@@ -121,8 +121,50 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
+import { onMounted, computed } from 'vue'
+import { useAgriculturalStore } from '../store/index.js'
+import { useAuthStore } from '../store/auth.js'
+import FeatureCard from './FeatureCard.vue'
+import FarmingGuides from './FarmingGuides.vue'
+import CropDetails from './CropDetails.vue'
+import PestControl from './PestControl.vue'
+import ContactForm from './ContactForm.vue'
+import UserManagement from './UserManagement.vue'
 // Remove store import if it's causing issues
-// import { useAgriculturalStore } from '../store/index.js'
+import { useAgriculturalStore } from '../store/index.js'
+
+export default {
+    components: {
+        FeatureCard,
+        FarmingGuides,
+        CropDetails,
+        PestControl,
+        ContactForm,
+        UserManagement
+    },
+    setup() {
+        const store = useAgriculturalStore()
+        const authStore = useAuthStore()
+
+        const authUser = computed(() => authStore.user)
+
+        onMounted(() => {
+            store.fetchGuides()
+            store.fetchCrops()
+            store.fetchPestStrategies()
+        })
+
+        const handleInquirySubmitted = (message) => {
+            console.log('Inquiry submitted:', message)
+        }
+
+        return {
+            store,
+            authUser,
+            handleInquirySubmitted
+        }
+    }
+}
 
 // Sample data (remove this and use store when ready)
 const features = [
@@ -156,13 +198,13 @@ const form = reactive({
     message: ''
 });
 
-// const store = useAgriculturalStore() // Uncomment when store is ready
+const store = useAgriculturalStore() // Uncomment when store is ready
 
-// onMounted(() => {
-//     store.fetchGuides()
-//     store.fetchCrops()
-//     store.fetchPestStrategies()
-// })
+onMounted(() => {
+    store.fetchGuides()
+    store.fetchCrops()
+    store.fetchPestStrategies()
+})
 
 const handleSubmit = () => {
     console.log('Form submitted:', form);

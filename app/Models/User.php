@@ -2,31 +2,118 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that are mass assignable.
      *
-     * @return array<string, string>
+     * @var array<int, string>
      */
-    protected function casts(): array
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'phone',
+        'address',
+        'profile_photo',
+        'expertise_area',
+        'is_active',
+        'email_verified_at'
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_active' => 'boolean',
+    ];
+
+    // Role constants
+    const ROLE_ADMIN = 'admin';
+    const ROLE_AGRONOMIST = 'agronomist';
+    const ROLE_FARMER = 'farmer';
+    const ROLE_RESEARCHER = 'researcher';
+
+    /**
+     * Check if user has a specific role
+     */
+    public function hasRole($role)
+    {
+        return $this->role === $role;
+    }
+
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin()
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    /**
+     * Check if user is agronomist
+     */
+    public function isAgronomist()
+    {
+        return $this->role === self::ROLE_AGRONOMIST;
+    }
+
+    /**
+     * Check if user is farmer
+     */
+    public function isFarmer()
+    {
+        return $this->role === self::ROLE_FARMER;
+    }
+
+    /**
+     * Get all available roles
+     */
+    public static function getRoles()
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            self::ROLE_ADMIN => 'Administrator',
+            self::ROLE_AGRONOMIST => 'Agronomist',
+            self::ROLE_FARMER => 'Farmer',
+            self::ROLE_RESEARCHER => 'Researcher',
         ];
+    }
+
+    /**
+     * Get the inquiries for the user.
+     */
+    public function inquiries()
+    {
+        return $this->hasMany(Inquiry::class);
+    }
+
+    /**
+     * Get the guides created by the user.
+     */
+    public function guides()
+    {
+        return $this->hasMany(Guide::class, 'created_by');
     }
 }

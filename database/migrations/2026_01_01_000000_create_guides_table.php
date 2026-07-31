@@ -6,22 +6,25 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('guides', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
-            $table->string('category');
+            $table->string('slug')->unique();
             $table->text('description');
-            $table->string('season')->nullable();
-            $table->string('method')->nullable();
-            $table->text('steps')->nullable();
-            $table->text('tips')->nullable();
+            $table->longText('content');
+            $table->string('category')->nullable();
+            $table->string('image_url')->nullable();
+            $table->string('status')->default('draft'); // draft, published, archived
+            $table->integer('views')->default(0);
+            $table->timestamp('published_at')->nullable();
             $table->timestamps();
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('guides');
     }
